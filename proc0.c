@@ -7,8 +7,9 @@ const char *proc_name = "proc0";
 
 int main() {
     ProcIpc ipc; 
-    Connector ct;    
-    proc_ipc_init(proc_name, &ipc);
+    Connector ct;   
+    strcpy(ct.name, proc_name);
+    proc_ipc_init(&ct, &ipc);
 
     Message msg;
     const char *data = "demo";

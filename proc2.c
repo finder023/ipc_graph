@@ -7,13 +7,14 @@ const char *proc_name = "proc2";
 
 int main() {
     ProcIpc ipc; 
-    proc_ipc_init(proc_name, &ipc);
+    Connector net;
+    strcpy(net.name, proc_name);
+    proc_ipc_init(&net, &ipc);
 
     Message msg;
     sem_t *sem_rd, *sem_wr;
     const char *rd_name = "proc1_2_proc2";
     const char *wr_name = "proc2_2_proc3";
-
     
     if ((sem_rd = sem_open(rd_name, O_RDWR)) == SEM_FAILED) {
         err_ret("proc2 open sem_rd fail");

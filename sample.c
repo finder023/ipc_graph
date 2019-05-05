@@ -2,30 +2,44 @@
 #include <sys/mman.h>
 
 
-int init_sample(Sample *sm, const char *n) {
-    assert(sm && n);
-    strcpy(sm->name, n);
+int init_sample(Sample *sm, Connector *net) {
+    assert(sm && net);
     sm->mem_len = MAXLINE;
+
+    strcpy(sm->name, net->name);
+    strcat(sm->name, ".shdm");
+
+    sm->net = net;
     // create shared memory
-    if ((sm->fd = shm_open(sm->name, O_FLAG, FILE_MODE)) < 0) {
-        err_ret("create shm %s fail", sm->name);
+    if ((sm->wr_fd = shm_open(sm->name, O_FLAG, FILE_MODE)) < 0) {
+        err_ret("open shm %s fail", sm->name);
         return 1;
     }
     // mmap
-    sm->ptr = mmap(NULL, sm->mem_len, PROT_READ | PROT_WRITE, MAP_SHARED, sm->fd, 0);
-    if (!sm->ptr) {
-        err_ret("mmap shm %s fail", sm->name);
+    sm->wr_ptr = mmap(NULL, sm->mem_len, PROT_READ | PROT_WRITE, MAP_SHARED, sm->wr_fd, 0);
+    if (!sm->wr_ptr) {
+        err_quit("mmap shm %s fail", sm->name);
         return 2;
+    }
+    
+    int fd;
+    char buf[MAX_NAME_LEN];
+    for (int i=0; i<sm->rd_num; ++i) {
+        strcpy(buf, net->rd_name_set[i]); strcat(buf, ".shdm");
+        if ((fd = shm_open(buf, O_FLAG, FILE_MODE)) < 0) {
+            err_quit("open rd shm %s fail", buf);
+        }
+        sm->rd_fd_set[i] = fd;
     }
 
     // create semaphore
     char sem_name_buff[MAXLINE];
     strcpy(sem_name_buff, sm->name);
-    strcat(sem_name_buff, ".sem");
+    strcat(sem_name_buff, ".shdm.sem");
 
     sm->sem = sem_open(sem_name_buff, O_CREAT, FILE_MODE, 1);
     if (!sm->sem) {
-        err_ret("create semaphore  %s fail", sem_name_buff);
+        err_quit("create semaphore  %s fail", sem_name_buff);
         return 3;
     }
     sm->status = EMPTY;
@@ -33,19 +47,19 @@ int init_sample(Sample *sm, const char *n) {
 }
 
 int send_sample(Sample *sm, Message *msg) {
-    assert(sm && sm->fd && sm->ptr && sm->sem);
+    assert(sm && sm->wr_fd && sm->wr_ptr && sm->sem);
 
     sem_wait(sm->sem);
     if (sm->status == EMPTY)
         sm->status = FULL;
-    memcpy(sm->ptr, msg, msg->msg_len + MSGHEADSIZE);
+    memcpy(sm->wr_ptr, msg, msg->msg_len + MSGHEADSIZE);
     sem_post(sm->sem);
     return msg->msg_len + MSGHEADSIZE;
 }
 
 
-int recv_sample(Sample *sm, Message *msg) {
-    assert(sm && sm->fd && sm->ptr && sm->sem);
+int recv_sample(Sample *sm, Message *msg, int _n) {
+    assert(sm && msg);
 
     // wait mutex
     sem_wait(sm->sem);
@@ -57,9 +71,9 @@ int recv_sample(Sample *sm, Message *msg) {
     }
 
     // read message header
-    memcpy(msg, sm->ptr, MSGHEADSIZE);
+    memcpy(msg, sm->rd_ptr_set[_n], MSGHEADSIZE);
     // read message body
-    memcpy(msg->msg_data, sm->ptr + MSGHEADSIZE, msg->msg_len);
+    memcpy(msg->msg_data, sm->rd_ptr_set[_n] + MSGHEADSIZE, msg->msg_len);
     // signal mutex
     sem_post(sm->sem);
     return msg->msg_len + MSGHEADSIZE;

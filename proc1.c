@@ -6,8 +6,10 @@
 const char *proc_name = "proc1";
 
 int main() {
-    ProcIpc ipc; 
-    proc_ipc_init(proc_name, &ipc);
+    ProcIpc ipc;
+    Connector net;
+    strcpy(net.name, proc_name);
+    proc_ipc_init(&net, &ipc);
 
     Message msg;
     sem_t *sem_rd, *sem_wr;

@@ -18,10 +18,12 @@ void proc_fifo_rd_open(Queue *q) {
     sem_wait(sem);
 
     // open read fifo
+    char buf[MAX_NAME_LEN];
     for (int i=0; i<q->rd_num; ++i) {
         int fd;
-        if ((fd = open(q->net->rd_name_set[i], O_RDONLY | O_NONBLOCK)) < 0) {
-            err_quit("open rd fifo fail: %s", q->net->rd_name_set[i]);
+        strcpy(buf, "./tmp/"); strcat(buf, q->net->rd_name_set[i]); strcat(buf, ".fifo");
+        if ((fd = open(buf, O_RDONLY | O_NONBLOCK)) < 0) {
+            err_quit("open rd fifo fail: %s", buf);
         }
         q->fd_rd[i] = fd;
     }
@@ -62,72 +64,46 @@ void proc_fifo_wr_open(Queue *q) {
 }
 
 
-void init_connector(const char *name, Connector *c) {
-    assert(c && strlen(name));
+void init_connector(Connector *c) {
+    assert(c);
 
-    strcpy(c->name, name);
+    const char *name = c->name;
 
     if (!strcmp(name, "proc0")) {
         c->rd_num = 0;
         c->wr_num = 1;
-    } else if (!strcpy(name, "proc1")) {
+    } else if (!strcmp(name, "proc1")) {
         c->rd_num = 1;
         c->wr_num = 1;
         strcpy(c->rd_name_set[0], "proc0");
-    } else if (!strpcy)
-} 
-
-void proc_ipc_init(const char *name, ProcIpc *ipc) {
-    assert(strlen(name));
-
-    char buf[MAXLINE];
-    strcpy(buf, "./tmp/");
-    strcat(buf, name);
-    strcat(buf, ".fifo");
-
-    char rd_buf[MAXLINE];
-
-    
-    char input_rd[MAX_INPUT][MAX_FIFO_NAME];
-    int input_num = 0;
-
-    if (!strcmp(name, "proc0")) {
-        input_num = 0;
-    } else if (!strcmp(name, "proc1")) {
-        input_num = 1;
-        strcpy(rd_buf, "./tmp/"); 
-        strcat(rd_buf, "proc0");
-        strcat(rd_buf, ".fifo");
-        strcpy(input_rd[0], rd_buf);
     } else if (!strcmp(name, "proc2")) {
-        input_num = 1;
-        strcpy(rd_buf, "./tmp/"); 
-        strcat(rd_buf, "proc1");
-        strcat(rd_buf, ".fifo");
-        strcpy(input_rd[0], rd_buf);
+        c->rd_num = 1;
+        c->wr_num = 1;
+        strcpy(c->rd_name_set[0], "proc1");
     } else if (!strcmp(name, "proc3")) {
-        input_num = 1;
-        strcpy(rd_buf, "./tmp/"); 
-        strcat(rd_buf, "proc2");
-        strcat(rd_buf, ".fifo");
-        strcpy(input_rd[0], rd_buf);
+        c->rd_num = 1;
+        c->wr_num = 1;
+        strcpy(c->rd_name_set[0], "proc2");
     } else if (!strcmp(name, "proc4")) {
-        input_num = 1;
-        strcpy(rd_buf, "./tmp/"); 
-        strcat(rd_buf, "proc3");
-        strcat(rd_buf, ".fifo");
-        strcpy(input_rd[0], rd_buf);
+        c->rd_num = 1;
+        c->wr_num = 0;
+        strcpy(c->rd_name_set[0], "proc3");
     } else {
         err_quit("invalid proc name: %s", name);
     }
+} 
 
-    init_queue_input(&ipc->_queue, buf, input_rd, input_num);
+void proc_ipc_init(Connector *c, ProcIpc *ipc) {
+    assert(c && ipc);
+
+    init_connector(c);
+    init_queue_input(&ipc->_queue, c);
 
     proc_fifo_rd_open(&ipc->_queue);
-    if (strcmp(name, "proc4"))
+    if (strcmp(c->name, "proc4"))
         proc_fifo_wr_open(&ipc->_queue);
 
-    printf("%s fifo wr done\n", name);
+    printf("%s fifo wr done\n", c->name);
 
 }
 

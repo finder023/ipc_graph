@@ -10,23 +10,23 @@ void init_queue(Queue *q, const char *name) {
     assert(q && name);    
 
     strcpy(q->name, name);
-    q->input_num = 0;
+    q->rd_num = 0;
     q->fd_wr = -1;
     q->msg_num = 0;
 }
 
-void init_queue_input(Queue *q, const char *name, char input_rd[MAX_INPUT][MAX_FIFO_NAME], int n) {
-    assert(q && name && input_rd);
+void init_queue_input(Queue *q, Connector *c) {
+    assert(q && c);
 
-    strcpy(q->name, name);
-    q->input_num = n;
+    char buf[MAX_NAME_LEN];
+    strcpy(buf, "./tmp/"); strcat(buf, c->name); strcat(buf, ".fifo");
+    strcpy(q->name, buf);
+    q->rd_num = c->rd_num;
     q->fd_wr = -1;
 
     q->msg_num = 0;
-
-    for (int i=0; i<n; ++i) {
-        strcpy(q->rd_name[i], input_rd[i]);
-    }
+    
+    q->net = c;
 }
 
 
@@ -55,7 +55,7 @@ int send_queue(Queue *q, Message *msg) {
 
 int recv_queue(Queue *q, Message *msg, int _n) {
     assert(q && msg);
-    assert(_n < q->input_num);
+    assert(_n < q->rd_num);
     
     int remain_len = MSGHEADSIZE;
     // printf("remain len: %d\n", remain_len);

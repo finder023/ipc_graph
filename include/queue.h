@@ -18,7 +18,7 @@ typedef struct Queue {
 } Queue;
 
 void init_queue(Queue *q, const char *);
-void init_queue_input(Queue *, const char *, char [MAX_INPUT][MAX_FIFO_NAME], int);
+void init_queue_input(Queue *, Connector*);
 int send_queue(Queue *, Message *);
 int recv_queue(Queue *, Message *, int);
 
