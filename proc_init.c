@@ -21,7 +21,8 @@ void proc_fifo_rd_open(Queue *q) {
     char buf[MAX_NAME_LEN];
     for (int i=0; i<q->rd_num; ++i) {
         int fd;
-        strcpy(buf, "./tmp/"); strcat(buf, q->net->rd_name_set[i]); strcat(buf, ".fifo");
+        strcpy(buf, "./tmp/"); strcat(buf, q->net->rd_name_set[i]); 
+        strcat(buf, ".fifo");
         if ((fd = open(buf, O_RDONLY | O_NONBLOCK)) < 0) {
             err_quit("open rd fifo fail: %s", buf);
         }

@@ -2,11 +2,7 @@
 #define __CONNECTOR_H
 
 #include "requires.h"
-
-#define MAX_RD_NUM 5
-#define MAX_WR_NUM 5
-
-#define MAX_NAME_LEN 50
+#include "conf.h"
 
 typedef struct Connector {
     char name[MAX_NAME_LEN];
@@ -16,6 +12,12 @@ typedef struct Connector {
     char wr_name_set[MAX_WR_NUM][MAX_NAME_LEN];
 } Connector;
 
+typedef struct Graph {
+    Connector *all_connector[MAX_GRAPH_MODULE];
+    int size;
+} Graph;
 
+void build_graph(Graph *);
+void destroy_graph(Graph *);
 
 #endif

@@ -21,7 +21,7 @@ int main() {
     if ((sem = sem_open(wr_name, O_RDWR)) == SEM_FAILED) {
         err_ret("proc0 sem_open fail");
     }
-
+    
     send_queue(&ipc._queue, &msg);
     sem_post(sem);
     

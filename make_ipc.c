@@ -25,7 +25,8 @@ static void make_shd_mem() {
 
     for (int i=0; i<NUM_PROC; ++i) {
         snprintf(buf, MAXLINE - 1, "proc%d.shdm", i);
-        if (shm_open(buf, O_FLAG, FILE_MODE) < 0) {
+        shm_unlink(buf);
+        if (shm_open(buf, O_CREAT | O_RDWR, FILE_MODE) < 0) {
             err_quit("create shm fail: %s", buf);
         }
     }
@@ -41,7 +42,7 @@ static void make_semaphore() {
     }
     int val;
     sem_getvalue(sem, &val);
-    printf("sem val: %d\n", val);
+    // printf("sem val: %d\n", val);
     sem_close(sem);
 
     sem_unlink(FIFO_WR_SEM);

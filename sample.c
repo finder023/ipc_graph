@@ -16,7 +16,8 @@ int init_sample(Sample *sm, Connector *net) {
         return 1;
     }
     // mmap
-    sm->wr_ptr = mmap(NULL, sm->mem_len, PROT_READ | PROT_WRITE, MAP_SHARED, sm->wr_fd, 0);
+    sm->wr_ptr = mmap(NULL, sm->mem_len, PROT_READ | PROT_WRITE, MAP_SHARED,
+                      sm->wr_fd, 0);
     if (!sm->wr_ptr) {
         err_quit("mmap shm %s fail", sm->name);
         return 2;
@@ -30,6 +31,12 @@ int init_sample(Sample *sm, Connector *net) {
             err_quit("open rd shm %s fail", buf);
         }
         sm->rd_fd_set[i] = fd;
+
+        sm->rd_ptr_set[i] = mmap(NULL, sm->mem_len, PROT_READ | PROT_WRITE, 
+                                 MAP_SHARED, sm->rd_fd_set[i], 0);
+        if (!sm->rd_ptr_set[i]) {
+            err_quit("mmap shm fail: %s", net->rd_name_set[i]);
+        }
     }
 
     // create semaphore
@@ -73,7 +80,7 @@ int recv_sample(Sample *sm, Message *msg, int _n) {
     // read message header
     memcpy(msg, sm->rd_ptr_set[_n], MSGHEADSIZE);
     // read message body
-    memcpy(msg->msg_data, sm->rd_ptr_set[_n] + MSGHEADSIZE, msg->msg_len);
+    memcpy(msg->msg_data, (char*)sm->rd_ptr_set[_n] + MSGHEADSIZE, msg->msg_len);
     // signal mutex
     sem_post(sm->sem);
     return msg->msg_len + MSGHEADSIZE;

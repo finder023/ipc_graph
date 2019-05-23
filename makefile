@@ -14,6 +14,7 @@ DEPS = $(BUILD)/error.o $(BUILD)/queue.o $(BUILD)/proc_init.o $(BUILD)/buffer.o 
 #BIN = make_ipc proc0 proc1 
 
 
+
 $(BUILD)/queue.o : queue.c
 	$(CC) $(CFLAG) -c $^ -o $@ $(RUNTIME)
 
@@ -50,8 +51,10 @@ $(BUILD)/proc3 : proc3.c	$(DEPS)
 $(BUILD)/proc4 : proc4.c	$(DEPS)
 	$(CC) $(CFLAG) $^ -o $@ $(RUNTIME)
 
-all : $(BIN)
+all : $(MKBUILD) $(BIN)
+
+MKBUILD :
+	if [ ! -c $(BUILD) ]; then mkdir $(BUILD); fi
 
 clean : 
-	rm *.o
 	rm $(BUILD)/*
