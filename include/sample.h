@@ -3,7 +3,7 @@
 
 #include "requires.h"
 #include "message.h"
-#include "connector.h"
+#include "graph.h"
 
 typedef enum PortStatus {
     EMPTY,

@@ -5,7 +5,7 @@
 #include "commu_def.h"
 #include "queue.h"
 #include "proc_ipc.h"
-#include "connector.h"
+#include "graph.h"
 #include "sample.h"
 
 #define NUM_PROC 5

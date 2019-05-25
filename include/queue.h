@@ -4,7 +4,7 @@
 #include "requires.h"
 #include "message.h"
 #include "commu_def.h"
-#include "connector.h"
+#include "graph.h"
 
 typedef struct Queue {
     char name[MAXLINE];

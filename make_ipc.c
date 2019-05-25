@@ -3,79 +3,81 @@
 #include "include/sample.h"
 #include "include/commu_def.h"
 #include "include/proc_init.h"
-
-static void make_fifo() {
-    char buf[MAXLINE];
-    
-    strcpy(buf, "./tmp/");
-
-    int len = strlen(buf);
-    for (int i=0; i<NUM_PROC; ++i) {
-        snprintf(buf + len, MAXLINE - len - 1,  "proc%d.fifo", i);
-        unlink(buf);
-        if (mkfifo(buf, FILE_MODE) < 0 && errno != EEXIST) {
-            err_quit("make fifo failed: %s", buf);
-        }
-    }
-}
+#include "include/graph.h"
 
 
-static void make_shd_mem() {
-    char buf[MAXLINE];
 
-    for (int i=0; i<NUM_PROC; ++i) {
-        snprintf(buf, MAXLINE - 1, "proc%d.shdm", i);
-        shm_unlink(buf);
-        if (shm_open(buf, O_CREAT | O_RDWR, FILE_MODE) < 0) {
-            err_quit("create shm fail: %s", buf);
-        }
-    }
-}
+static void _make_sem(const char *name) {
+    assert(name);
 
-static void make_semaphore() {
-    int flag = O_CREAT | O_RDWR;
     sem_t *sem;
-
-    sem_unlink(FIFO_RD_SEM);
-    if ((sem = sem_open(FIFO_RD_SEM, flag, FILE_MODE, NUM_PROC)) == SEM_FAILED) {
-        err_quit("sem create fail: %s", FIFO_RD_SEM);
-    }
-    int val;
-    sem_getvalue(sem, &val);
-    // printf("sem val: %d\n", val);
-    sem_close(sem);
-
-    sem_unlink(FIFO_WR_SEM);
-    if ((sem = sem_open(FIFO_WR_SEM, flag, FILE_MODE, 0)) == SEM_FAILED) {
-        err_quit("sem create fail: %s", FIFO_WR_SEM);
+    sem_unlink(name);
+    if ((sem = sem_open(name, O_CREAT, FILE_MODE, 0)) == SEM_FAILED) {
+        err_quit("make fifo sem fail: %s", name);
     }
     sem_close(sem);
-    
-    sem_unlink(FIFO_RD_COUNT_SEM);
-    if ((sem = sem_open(FIFO_RD_COUNT_SEM, flag, FILE_MODE, 1)) == SEM_FAILED) {
-        err_quit("sem create fail: %s", FIFO_RD_COUNT_SEM);
-    }
-    sem_close(sem);
-
 }
 
-static void make_proc_ipc_sem() {
-    char sem_name[MAXLINE];
-    sem_t *sem;
-    for (int i=0; i<NUM_PROC-1; ++i) {
-        snprintf(sem_name, MAXLINE-1, "proc%d_2_proc%d", i, i+1);
+static void _make_shd_mem(Graph *g) {
+    assert(g);
 
-        sem_unlink(sem_name);
-        if ((sem = sem_open(sem_name, O_CREAT | O_CREAT, FILE_MODE, 0)) == SEM_FAILED) {
-            err_quit("make proc ipc sem fail: %s", sem_name);
+    char name_buff[MAXLINE];
+    Connector *net;
+    int wr_num;
+
+    for (int i=0; i<g->size; ++i) {
+        net = g->all_connector[i];
+        wr_num = net->wr_num;
+
+        for (int j=0; j<wr_num; ++j) {
+            snprintf(name_buff, MAXLINE, "%s_2_%s.shm", net->name, \
+                     net->wr_name_set[j]);
+            shm_unlink(name_buff);
+            if (shm_open(name_buff, O_CREAT | O_RDWR, FILE_MODE) < 0) {
+                err_quit("make shd_mem fail: %s", name_buff);
+            }
+            
+            // shd_mem sem for read and write
+            snprintf(name_buff, MAXLINE, "%s_2_%s.shmsem", net->name,
+                     net->wr_name_set[i]);
+            _make_sem(name_buff);
         }
-        sem_close(sem);
+    }
+} 
+
+
+static void _make_fifo(Graph *g) {
+    assert(g);
+
+    char name_buff[MAXLINE];
+    Connector *con;
+    int wr_num;
+    for (int i=0; i<g->size; ++i) {
+        con = g->all_connector[i];
+        wr_num = con->wr_num;
+        for (int j=0; j<wr_num; ++j) {
+            snprintf(name_buff, MAXLINE, "./tmp/%s_2_%s.fifo", con->name, 
+                     con->wr_name_set[j]);
+            unlink(name_buff);
+            if (mkfifo(name_buff, FILE_MODE) < 0 && errno != EEXIST) {
+                err_quit("make fifo failed: %s", name_buff);
+            }
+
+            // semaphore
+            snprintf(name_buff, MAXLINE, "%s_2_%s.fifosem", con->name, 
+                     con->wr_name_set[i]);
+            _make_sem(name_buff);
+        }
     }
 }
 
 int main() {
-    make_fifo();
-    make_shd_mem();
-    make_semaphore();
-    make_proc_ipc_sem();
+    Graph g;
+    build_graph(&g);
+
+    _make_fifo(&g);
+    _make_shd_mem(&g);
+
+    destroy_graph(&g);
 }
+

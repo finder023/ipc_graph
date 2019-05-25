@@ -8,33 +8,37 @@ RUNTIME = -lrt -lpthread
 
 CFLAG = -g -Wall 
 
-BIN = $(BUILD)/make_ipc $(BUILD)/proc0 $(BUILD)/proc1 $(BUILD)/proc2 $(BUILD)/proc3 $(BUILD)/proc4
+BIN = $(BUILD)/make_ipc $(BUILD)/proc0 $(BUILD)/proc1 $(BUILD)/proc2 \
+	  $(BUILD)/proc3 $(BUILD)/proc4
 
-DEPS = $(BUILD)/error.o $(BUILD)/queue.o $(BUILD)/proc_init.o $(BUILD)/buffer.o $(BUILD)/sample.o $(BUILD)/blackboard.o
+DEPS = $(BUILD)/error.o $(BUILD)/queue.o $(BUILD)/proc_init.o $(BUILD)/buffer.o \
+	   $(BUILD)/sample.o $(BUILD)/blackboard.o $(BUILD)/graph.o 
 #BIN = make_ipc proc0 proc1 
 
 
+$(BUILD)/graph.o : graph.c
+	$(CC) $(CFLAG) -c $^ -o $@ 
 
 $(BUILD)/queue.o : queue.c
-	$(CC) $(CFLAG) -c $^ -o $@ $(RUNTIME)
+	$(CC) $(CFLAG) -c $^ -o $@ 
 
 $(BUILD)/error.o : error.c
-	$(CC) $(CFLAG) -c $^ -o $@ $(RUNTIME)
+	$(CC) $(CFLAG) -c $^ -o $@ 
 
 $(BUILD)/proc_init.o : proc_init.c
-	$(CC) $(CFLAG) -c $^ -o $@ $(RUNTIME)
+	$(CC) $(CFLAG) -c $^ -o $@ 
 
 $(BUILD)/buffer.o : buffer.c
-	$(CC) $(CFLAG) -c $^ -o $@ $(RUNTIME)
+	$(CC) $(CFLAG) -c $^ -o $@ 
 
 $(BUILD)/sample.o : sample.c
-	$(CC) $(CFLAG) -c $^ -o $@ $(RUNTIME)
+	$(CC) $(CFLAG) -c $^ -o $@ 
 
 $(BUILD)/blackboard.o : blackboard.c
-	$(CC) $(CFLAG) -c $^ -o $@ $(RUNTIME)
+	$(CC) $(CFLAG) -c $^ -o $@ 
 
-$(BUILD)/make_ipc : make_ipc.c $(DEPS)
-	$(CC) $(CFLAG) $^ -o $@ $(RUNTIME)
+$(BUILD)/make_ipc.o : make_ipc.c 
+	$(CC) $(CFLAG) -c $^ -o $@ 
 
 $(BUILD)/proc0 : proc0.c	$(DEPS)
 	$(CC) $(CFLAG) $^ -o $@ $(RUNTIME)
@@ -51,10 +55,16 @@ $(BUILD)/proc3 : proc3.c	$(DEPS)
 $(BUILD)/proc4 : proc4.c	$(DEPS)
 	$(CC) $(CFLAG) $^ -o $@ $(RUNTIME)
 
-all : $(MKBUILD) $(BIN)
+$(BUILD)/make_ipc : $(BUILD)/make_ipc.o $(DEPS)
+	$(CC) $(CFLAG) $^ -o $@ $(RUNTIME)
 
-MKBUILD :
-	if [ ! -c $(BUILD) ]; then mkdir $(BUILD); fi
+all : MKBUILD $(BIN)
+
+.PHONY: MKBUILD all
+
+MKBUILD:
+	if [ ! -d $(BUILD) ]; then mkdir $(BUILD); mkdir $(BUILD)/tmp; elif \
+		[ ! -d $(BUILD)/tmp ]; then mkdir $(BUILD)/tmp; fi
 
 clean : 
-	rm $(BUILD)/*
+	rm -rf $(BUILD)/*
