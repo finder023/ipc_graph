@@ -7,11 +7,11 @@
 #include "graph.h"
 
 
-typedef struct QueueOpr {
+typedef struct IpcOpr {
     void (*init)(void*, void*);
-    int (*send)(void*, void*);
+    int (*send)(void*, void*, int);
     int (*recv)(void*, void*, int);
-} QueueOpr;
+} IpcOpr;
 
 typedef struct Queue {
     char name[MAXLINE];
@@ -23,9 +23,10 @@ typedef struct Queue {
     int msg_num;
 
     Connector *net;
-    QueueOpr opr;
+    IpcOpr opr;
 } Queue;
 
+void queue_opr_register(Queue *, IpcOpr *);
 
 
 #endif

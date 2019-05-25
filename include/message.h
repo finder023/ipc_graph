@@ -2,8 +2,8 @@
 #define __MESSAGE_H
 
 #include <stdio.h>
+#include "conf.h"
 
-#define MAXMSG 4000
 #define MSGHEADSIZE (sizeof(Message) - MAXMSG)
 
 typedef struct Message {

@@ -67,7 +67,8 @@ static void _proc_fifo_wr_open(Queue *q) {
 
 }
 
-void init_queue_input(Queue *q, Connector *net) {
+
+void init_queue(Queue *q, Connector *net) {
     assert(q && net);
 
     memset(q, 0, sizeof(Queue));
@@ -83,7 +84,66 @@ void init_queue_input(Queue *q, Connector *net) {
 }
 
 
-int send_queue(Queue *q, Message *msg, int id);
-int recv_queue(Queue *, Message *, int id);
+int send_queue(Queue *q, Message *msg, int id) {
+    assert(q && msg);
+    assert(id < q->wr_num);
+
+    int remain_len = MSGHEADSIZE;
+    ssize_t n;
+
+    sem_wait(q->sem_rd[id]);
+    while (remain_len > 0) {
+        n = write(q->fd_wr[id], msg, remain_len);
+        remain_len -= n;
+    }
+
+    remain_len = msg->msg_len;
+    while (remain_len > 0) {
+        n = write(q->fd_wr[id], msg->msg_data, remain_len);
+        remain_len -= n;
+    }
+    return 0;
+}
+
+int recv_queue(Queue *q, Message *msg, int id) {
+    assert(q && msg);
+    assert(id < q->rd_num);
+    
+    int remain_len = MSGHEADSIZE;
+    ssize_t n;
+
+    while (remain_len > 0) {
+        if ((n = read(q->fd_rd[id], msg, remain_len)) < 0)
+            err_quit("read header error");
+        remain_len -= n;
+    }
+
+    remain_len = msg->msg_len;
+
+    while (remain_len > 0) {
+        if ((n = read(q->fd_rd[id], msg->msg_data, remain_len)) < 0)
+            err_quit("read body error");
+        remain_len -= n;
+    }
+    return 0;
+}
 
 
+/*
+opr register func
+*/
+
+void queue_opr_register(Queue *q, IpcOpr *opr) {
+    assert(q);
+
+    if (opr) {
+        q->opr = *opr;
+        return;
+    }
+    
+    // default opr impl
+    q->opr.init = init_queue;
+    q->opr.send = send_queue;
+    q->opr.recv = recv_queue;
+    return;
+}

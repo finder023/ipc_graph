@@ -23,6 +23,8 @@
 // common
 #define MAXLINE 4096
 
+#define MAXMSG 4000
+
 // test or not
 #define TEST 0
 
