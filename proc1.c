@@ -1,5 +1,5 @@
 #include "include/requires.h"
-#include "include/proc_init.h"
+#include "include/ipc_init.h"
 #include "include/queue.h"
 #include "include/proc_ipc.h"
 

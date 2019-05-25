@@ -1,5 +1,5 @@
 #include "include/requires.h"
-
+#include "include/conf.h"
 #include <stdarg.h>
 #include <syslog.h>
 #include <string.h>

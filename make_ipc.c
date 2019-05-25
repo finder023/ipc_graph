@@ -2,17 +2,17 @@
 #include <sys/mman.h>
 #include "include/sample.h"
 #include "include/commu_def.h"
-#include "include/proc_init.h"
+#include "include/ipc_init.h"
 #include "include/graph.h"
 
 
 
-static void _make_sem(const char *name) {
+static void _make_sem(const char *name, const int default_val) {
     assert(name);
 
     sem_t *sem;
     sem_unlink(name);
-    if ((sem = sem_open(name, O_CREAT, FILE_MODE, 0)) == SEM_FAILED) {
+    if ((sem = sem_open(name, O_CREAT, FILE_MODE, default_val)) == SEM_FAILED) {
         err_quit("make fifo sem fail: %s", name);
     }
     sem_close(sem);
@@ -40,7 +40,7 @@ static void _make_shd_mem(Graph *g) {
             // shd_mem sem for read and write
             snprintf(name_buff, MAXLINE, "%s_2_%s.shmsem", net->name,
                      net->wr_name_set[i]);
-            _make_sem(name_buff);
+            _make_sem(name_buff, 0);
         }
     }
 } 
@@ -66,9 +66,22 @@ static void _make_fifo(Graph *g) {
             // semaphore
             snprintf(name_buff, MAXLINE, "%s_2_%s.fifosem", con->name, 
                      con->wr_name_set[i]);
-            _make_sem(name_buff);
+            _make_sem(name_buff, 0);
         }
     }
+}
+
+static void _make_proc_id_sem(Graph *g) {
+    assert(g);
+
+    _make_sem(PROC_COUNT_SEM, g->size);
+    _make_sem(PROC_COUNT_MUTEX, 1);
+}
+
+static void _make_fifo_rd_sem(Graph *g) {
+    assert(g);
+    _make_sem(FIFO_RD_COUNT_SEM, g->size);
+    _make_sem(FIFO_WR_SEM, 0);
 }
 
 int main() {
@@ -77,6 +90,7 @@ int main() {
 
     _make_fifo(&g);
     _make_shd_mem(&g);
+    _make_proc_id_sem(&g);
 
     destroy_graph(&g);
 }

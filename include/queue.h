@@ -6,21 +6,27 @@
 #include "commu_def.h"
 #include "graph.h"
 
+
+typedef struct QueueOpr {
+    void (*init)(void*, void*);
+    int (*send)(void*, void*);
+    int (*recv)(void*, void*, int);
+} QueueOpr;
+
 typedef struct Queue {
     char name[MAXLINE];
     int fd_rd[MAX_RD_NUM];
-    int fd_wr;
+    sem_t *sem_rd[MAX_RD_NUM];
+    int fd_wr[MAX_WR_NUM];
     int rd_num;
     int wr_num;
     int msg_num;
 
     Connector *net;
+    QueueOpr opr;
 } Queue;
 
-void init_queue(Queue *q, const char *);
-void init_queue_input(Queue *, Connector*);
-int send_queue(Queue *, Message *);
-int recv_queue(Queue *, Message *, int);
+
 
 #endif
 

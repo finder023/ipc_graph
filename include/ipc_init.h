@@ -15,7 +15,7 @@ void proc_fifo_rd_open(Queue*);
 void proc_fifo_wr_open(Queue*);
 
 void proc_ipc_init(Connector *c, ProcIpc *ipc);
-
+Connector *dispatch_proc_net(Graph *g); 
 // this func requires different implementation depending on the graph
 void init_connector(Connector *);
 

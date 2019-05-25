@@ -146,6 +146,11 @@ void build_graph(Graph *g) {
         }
         g->size++;
     }
+
+    // write g->size to all connetor
+    for (int i=0; i<g->size; ++i) {
+        g->all_connector[i]->net_num = g->size;
+    }
 }
 
 void destroy_graph(Graph *g) {

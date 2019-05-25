@@ -14,7 +14,6 @@
 
 #define DEBUG 0
 
-#define MAXLINE 4096
 #define FILE_MODE (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)
 
 #define CONF_PREFIX "graph_module"

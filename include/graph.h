@@ -8,6 +8,7 @@ typedef struct Connector {
     char name[MAX_NAME_LEN];
     int rd_num;
     int wr_num;
+    int net_num;
     char rd_name_set[MAX_RD_NUM][MAX_NAME_LEN];
     char wr_name_set[MAX_WR_NUM][MAX_NAME_LEN];
 } Connector;
