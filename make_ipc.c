@@ -42,6 +42,11 @@ static void _make_shd_mem(Graph *g) {
                 err_quit("snprintf error");
             _make_sem(name_buff, 0);
         }
+
+        // shm mutex
+        if (snprintf(name_buff, MAXLINE, "%s.shmsem", net->name) < 0)
+            err_quit("snprintf error");
+        _make_sem(name_buff, 1);
     }
 } 
 

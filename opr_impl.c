@@ -176,7 +176,6 @@ int recv_Queue(Queue *q, Message *msg, int id) {
 
 
 // sample opr impl func
-
 void init_Sample(Sample *s, Connector *net) {
     assert(s && net);
 
@@ -190,6 +189,14 @@ void init_Sample(Sample *s, Connector *net) {
     void *ptr;
     char buf[MAXLINE];
     sem_t *sem;
+
+    // sample shm mutex
+    if (snprintf(buf, MAXLINE, "%s.shmsem", s->name) < 0)
+        err_quit("snprintf error");
+    if ((sem = sem_open(buf, O_RDWR)) == SEM_FAILED)
+        err_quit("%s open shm shm fail", s->name);
+    s->sem = sem;
+
     // rd shm open
     for (int i=0; i<s->rd_num; ++i) {
         if (snprintf(buf, MAXLINE, "%s_2_%s.shm", s->net->rd_name_set[i],
@@ -208,7 +215,9 @@ void init_Sample(Sample *s, Connector *net) {
         if (snprintf(buf, MAXLINE, "%s_2_%s.shmsem", s->net->rd_name_set[i],
                     s->name) < 0)
             err_quit("snprinf error");
-        if ()
+        if ((sem = sem_open(buf, O_RDWR)) == SEM_FAILED)
+            err_quit("open shm sem fail: %s", buf);
+        s->sem_rd[i] = sem;
     }
     // wr shm open
     for (int i=0; i<s->wr_num; ++i) {
@@ -223,14 +232,52 @@ void init_Sample(Sample *s, Connector *net) {
             fd, 0)) == NULL)
             err_quit("mmap shm fail: %s", buf);
         s->wr_ptr_set[i] = ptr;
+
+        // semaphore open
+        if (snprintf(buf, MAXLINE, "%s_2_%s.shmsem", s->name, 
+            s->net->rd_name_set[i]) < 0)
+            err_quit("snprinf error");
+        if ((sem = sem_open(buf, O_RDWR)) == SEM_FAILED)
+            err_quit("open shm sem fail: %s", buf);
+        s->sem_wr[i] = sem;
     }
 
 }
 
 int send_Sample(Sample *s, Message *msg, int id) {
+    assert(s && msg);
 
+    dprintf("%s wait for rd sems\n", s->name);
+    assert(id < s->wr_num);
+    
+    int remain_len = msg->msg_len + MSGHEADSIZE;
+    // shm mutex
+    sem_wait(s->sem);
+    memcpy(s->wr_ptr_set[id], msg, remain_len);
+    sem_post(s->sem);
+
+    // signal proc that wait for the message
+    sem_post(s->sem_wr[id]);
+    dprintf("%s wr sem_post posted\n", s->name);
+    return remain_len;
 }
 
 int recv_Sample(Sample *s, Message *msg, int id) {
+    assert(s && msg);
+    assert(id < s->rd_num);
 
+    dprintf("%s wait for sem_rd\n", s->name);
+    
+    // wait until input proc write msg in shm
+    sem_wait(s->sem_rd[id]);
+    int remain_len = MSGHEADSIZE;
+    
+    // shm mutex
+    sem_wait(s->sem);
+    memcpy(msg, s->rd_ptr_set[id], remain_len);
+    remain_len = msg->msg_len;
+    memcpy(msg->msg_data, (char*)s->rd_ptr_set[id] + MSGHEADSIZE, remain_len);
+    sem_post(s->sem);
+
+    return MSGHEADSIZE + remain_len;
 }

@@ -12,7 +12,7 @@ BIN = $(BUILD)/make_ipc $(BUILD)/tmain $(BUILD)/tmain1 $(BUILD)/tmain2
 	  
 
 DEPS = $(BUILD)/error.o  $(BUILD)/buffer.o $(BUILD)/opr_impl.o \
-	   $(BUILD)/sample.o $(BUILD)/blackboard.o $(BUILD)/graph.o 
+	   $(BUILD)/blackboard.o $(BUILD)/graph.o 
 #BIN = make_ipc proc0 proc1 
 
 
@@ -26,9 +26,6 @@ $(BUILD)/error.o : error.c
 	$(CC) $(CFLAG) -c $^ -o $@ 
 
 $(BUILD)/buffer.o : buffer.c
-	$(CC) $(CFLAG) -c $^ -o $@ 
-
-$(BUILD)/sample.o : sample.c
 	$(CC) $(CFLAG) -c $^ -o $@ 
 
 $(BUILD)/blackboard.o : blackboard.c

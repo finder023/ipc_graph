@@ -33,4 +33,6 @@
 // debug print func
 #define DEBUG 0
 
+#define IPC_T "Queue"
+
 #endif
