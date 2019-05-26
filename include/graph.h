@@ -16,9 +16,13 @@ typedef struct Connector {
 typedef struct Graph {
     Connector *all_connector[MAX_GRAPH_MODULE];
     int size;
+    int num_in_only;
+    int num_out_only;
 } Graph;
 
 void build_graph(Graph *);
 void destroy_graph(Graph *);
+
+Connector *dispatch_proc_net(Graph *g); 
 
 #endif

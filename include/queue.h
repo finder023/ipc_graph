@@ -21,9 +21,6 @@ typedef struct Queue {
 } Queue;
 
 
-void queue_opr_register(Queue *, IpcOpr *);
-
-
 #endif
 
 

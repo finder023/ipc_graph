@@ -12,11 +12,11 @@
 #include <assert.h>
 #include <string.h>
 #include <stdarg.h>
+#include <sys/mman.h>
 #include "conf.h"
 
 #define FILE_MODE (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)
 
-#define CONF_PREFIX "graph_module"
 
 #define likely(x)    __builtin_expect(!!(x), 1)
 #define unlikely(x)  __builtin_expect(!!(x), 0)

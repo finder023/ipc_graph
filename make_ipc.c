@@ -1,7 +1,6 @@
 #include "include/requires.h"
 #include <sys/mman.h>
 #include "include/sample.h"
-#include "include/ipc_init.h"
 #include "include/graph.h"
 #include "include/conf.h"
 
@@ -84,7 +83,7 @@ static void _make_proc_id_sem(Graph *g) {
 
 static void _make_fifo_rd_sem(Graph *g) {
     assert(g);
-    _make_sem(FIFO_RD_COUNT_SEM, g->size - 1);
+    _make_sem(FIFO_RD_COUNT_SEM, g->size - g->num_in_only);
     _make_sem(FIFO_WR_SEM, 0);
 }
 

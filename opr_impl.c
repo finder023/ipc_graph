@@ -104,7 +104,7 @@ static void _proc_fifo_sem_open(Queue *q) {
     }
 }
 
-void init_queue(Queue *q, Connector *net) {
+void init_Queue(Queue *q, Connector *net) {
     assert(q && net);
 
     strcpy(q->name, net->name);
@@ -119,7 +119,7 @@ void init_queue(Queue *q, Connector *net) {
 }
 
 
-int send_queue(Queue *q, Message *msg, int id) {
+int send_Queue(Queue *q, Message *msg, int id) {
     assert(q && msg);
     assert(id < q->wr_num);
     int res = 0;
@@ -145,7 +145,7 @@ int send_queue(Queue *q, Message *msg, int id) {
     return res;
 }
 
-int recv_queue(Queue *q, Message *msg, int id) {
+int recv_Queue(Queue *q, Message *msg, int id) {
     assert(q && msg);
     assert(id < q->rd_num);
     
@@ -175,21 +175,62 @@ int recv_queue(Queue *q, Message *msg, int id) {
 }
 
 
-/*
-opr register func
-*/
+// sample opr impl func
 
-void queue_opr_register(Queue *q, IpcOpr *opr) {
-    assert(q);
+void init_Sample(Sample *s, Connector *net) {
+    assert(s && net);
 
-    if (opr) {
-        q->opr = *opr;
-        return;
+    strcpy(s->name, net->name);
+    s->wr_num = net->wr_num;
+    s->rd_num = net->rd_num;
+    s->net = net;
+    s->mem_len = MAXLINE;
+
+    int fd;
+    void *ptr;
+    char buf[MAXLINE];
+    sem_t *sem;
+    // rd shm open
+    for (int i=0; i<s->rd_num; ++i) {
+        if (snprintf(buf, MAXLINE, "%s_2_%s.shm", s->net->rd_name_set[i],
+                    s->name) < 0)
+            err_quit("snprinf error");
+        if ((fd = shm_open(buf, O_RDWR, FILE_MODE)) < 0)
+            err_quit("open shm fail %s", buf);
+        s->fd_rd[i] = fd;
+
+        if ((ptr = mmap(NULL, s->mem_len, PROT_READ | PROT_WRITE, MAP_SHARED,
+            fd, 0)) == NULL)
+            err_quit("mmap shm fail: %s", buf);
+        s->rd_ptr_set[i] = ptr;
+
+        // semaphore open
+        if (snprintf(buf, MAXLINE, "%s_2_%s.shmsem", s->net->rd_name_set[i],
+                    s->name) < 0)
+            err_quit("snprinf error");
+        if ()
     }
-    
-    // default opr impl
-    q->opr.init = (init_func_t)init_queue;
-    q->opr.recv = (recv_func_t)recv_queue;
-    q->opr.send = (send_func_t)send_queue;
-    return;
+    // wr shm open
+    for (int i=0; i<s->wr_num; ++i) {
+        if (snprintf(buf, MAXLINE, "%s_2_%s.shm", s->name, 
+                    s->net->rd_name_set[i]) < 0)
+            err_quit("snprinf error");
+        if ((fd = shm_open(buf, O_RDWR, FILE_MODE)) < 0)
+            err_quit("open shm fail %s", buf);
+        s->fd_wr[i] = fd;
+
+        if ((ptr = mmap(NULL, s->mem_len, PROT_READ | PROT_WRITE, MAP_SHARED,
+            fd, 0)) == NULL)
+            err_quit("mmap shm fail: %s", buf);
+        s->wr_ptr_set[i] = ptr;
+    }
+
+}
+
+int send_Sample(Sample *s, Message *msg, int id) {
+
+}
+
+int recv_Sample(Sample *s, Message *msg, int id) {
+
 }

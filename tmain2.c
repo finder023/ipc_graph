@@ -1,50 +1,32 @@
 #include "include/requires.h"
 #include "include/conf.h"
-#include "include/ipc_init.h"
 #include "include/graph.h"
 #include "include/queue.h"
 #include "include/opr_impl.h"
+#include "include/gen_main.h"
 
-
+const char *demo = "demo";
 
 int main() {
     Graph *g = (Graph*)malloc(sizeof(Graph));
-    Connector *net;
     Queue *q = (Queue*)malloc(sizeof(Queue));
-    Message *msg = (Message*)malloc(sizeof(Message));    
+    Message *msg_in, *msg_out;
     
-
-    build_graph(g);
-    net = dispatch_proc_net(g);
-    
-    //queue_opr_register(q, NULL);
-    q->opr.init = (init_func_t)init_queue;
-    q->opr.recv = (recv_func_t)recv_queue;
-    q->opr.send = (send_func_t)send_queue;
-    
-    q->opr.init(q, net);
-    dprintf("init done\n");
-
-    if (q->rd_num == 0) {
-        strcpy(msg->msg_data, "demo");
-        msg->msg_len = strlen("demo") + 1;
-    }
+    BUILD_GRAPH(Queue, g, q);
+    ALLOC_MSG(msg_in, msg_out, q, demo, strlen(demo) + 1);
 
     for (int i=0; i<q->rd_num; ++i) {
-        dprintf("before recv %d\n", i);
-        q->opr.recv(q, msg, i);
-        dprintf("recved msg: %s\n", msg->msg_data);
+        dprintf("%s before recv %d\n", q->name, i);
+        q->opr.recv(q, &msg_in[i], i);
+        dprintf("%s recved msg: %s\n", q->name, msg->msg_data);
     }
 
-    printf("recv msg: %s\n", msg->msg_data);
+    printf("%s recv msg: %s\n", q->name, msg_in[0].msg_data);
     // process
     for (int i=0; i<q->wr_num; ++i) {
-        q->opr.send(q, msg, i);    
+        q->opr.send(q, &msg_out[0], i);    
     }
     
-    
-    destroy_graph(g);
-    free(g);
-    free(q);
-    free(msg);
+    FREE_MSG(msg_in, msg_out);
+    FREE_GRAPH(g, q);
 }

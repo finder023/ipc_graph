@@ -12,6 +12,8 @@
 #define FIFO_RD_COUNT_SEM   "fifo_rd_count_sem"
 #define FIFO_WR_SEM         "fifo_wr_sem"
 
+#define CONF_PREFIX         "graph_module"
+
 // connector
 #define MAX_RD_NUM 5
 #define MAX_WR_NUM 5

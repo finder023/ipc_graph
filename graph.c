@@ -77,6 +77,8 @@ static int _read_str(const char **s, char *buf) {
 static void _graph_init(Graph *g) {
     assert(g);
     g->size = 0;
+    g->num_in_only = 0;
+    g->num_out_only = 0;
     memset(g->all_connector, 0, sizeof(Connector*) * MAX_GRAPH_MODULE);
 }
 
@@ -144,6 +146,10 @@ void build_graph(Graph *g) {
             free(g->all_connector[g->size]);
             continue;
         }
+        if (g->all_connector[g->size]->rd_num == 0)
+            g->num_in_only++;
+        if (g->all_connector[g->size]->wr_num == 0)
+            g->num_out_only++;
         g->size++;
     }
 
@@ -159,6 +165,33 @@ void destroy_graph(Graph *g) {
     for (int i=0; i<g->size; ++i) {
         free(g->all_connector[i]);
     }
+}
+
+
+Connector *dispatch_proc_net(Graph *g) {
+    assert(g);
+
+    Connector *net;
+    sem_t *count_sem, *mutex_sem;
+    int val;
+
+    if ((count_sem = sem_open(PROC_COUNT_SEM, O_RDWR)) == SEM_FAILED) {
+        err_quit("dispatch net fail => sem_open fail: %s", PROC_COUNT_SEM);
+    }
+    if ((mutex_sem = sem_open(PROC_COUNT_MUTEX, O_RDWR)) == SEM_FAILED) {
+        err_quit("dispatch net fail => sem open fail: %s", PROC_COUNT_MUTEX);
+    }
+
+    sem_wait(mutex_sem);
+    
+    sem_wait(count_sem);
+    sem_getvalue(count_sem, &val);
+    net = g->all_connector[val];
+    
+    sem_post(mutex_sem);
+
+    return net;
+    
 }
 
 

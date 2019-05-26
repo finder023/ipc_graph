@@ -11,7 +11,7 @@ CFLAG = -g -Wall
 BIN = $(BUILD)/make_ipc $(BUILD)/tmain $(BUILD)/tmain1 $(BUILD)/tmain2 
 	  
 
-DEPS = $(BUILD)/error.o  $(BUILD)/ipc_init.o $(BUILD)/buffer.o $(BUILD)/opr_impl.o \
+DEPS = $(BUILD)/error.o  $(BUILD)/buffer.o $(BUILD)/opr_impl.o \
 	   $(BUILD)/sample.o $(BUILD)/blackboard.o $(BUILD)/graph.o 
 #BIN = make_ipc proc0 proc1 
 
@@ -23,9 +23,6 @@ $(BUILD)/opr_impl.o : opr_impl.c
 	$(CC) $(CFLAG) -c $^ -o $@ 
 	
 $(BUILD)/error.o : error.c
-	$(CC) $(CFLAG) -c $^ -o $@ 
-
-$(BUILD)/ipc_init.o : ipc_init.c
 	$(CC) $(CFLAG) -c $^ -o $@ 
 
 $(BUILD)/buffer.o : buffer.c

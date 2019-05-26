@@ -4,12 +4,17 @@
 #include "conf.h"
 #include "requires.h"
 #include "queue.h"
+#include "sample.h"
 
 // queue opr impl
-void init_queue(Queue *, Connector*);
-int send_queue(Queue *, Message *, int);
-int recv_queue(Queue *, Message *, int);
+void init_Queue(Queue *, Connector*);
+int send_Queue(Queue *, Message *, int);
+int recv_Queue(Queue *, Message *, int);
 
+// sample opr impl
+void init_Smaple(Sample*, Connector*);
+int send_Sample(Sample*, Message*, int);
+int recv_Sample(Sample*, Message*, int);
 
 
 #endif
