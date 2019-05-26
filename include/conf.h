@@ -28,4 +28,7 @@
 // test or not
 #define TEST 0
 
+// debug print func
+#define DEBUG 0
+
 #endif

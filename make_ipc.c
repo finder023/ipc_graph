@@ -1,10 +1,9 @@
 #include "include/requires.h"
 #include <sys/mman.h>
 #include "include/sample.h"
-#include "include/commu_def.h"
 #include "include/ipc_init.h"
 #include "include/graph.h"
-
+#include "include/conf.h"
 
 
 static void _make_sem(const char *name, const int default_val) {
@@ -30,16 +29,18 @@ static void _make_shd_mem(Graph *g) {
         wr_num = net->wr_num;
 
         for (int j=0; j<wr_num; ++j) {
-            snprintf(name_buff, MAXLINE, "%s_2_%s.shm", net->name, \
-                     net->wr_name_set[j]);
+            if (snprintf(name_buff, MAXLINE, "%s_2_%s.shm", net->name, 
+                     net->wr_name_set[j]) < 0)
+                err_quit("snprintf error");
             shm_unlink(name_buff);
             if (shm_open(name_buff, O_CREAT | O_RDWR, FILE_MODE) < 0) {
                 err_quit("make shd_mem fail: %s", name_buff);
             }
             
             // shd_mem sem for read and write
-            snprintf(name_buff, MAXLINE, "%s_2_%s.shmsem", net->name,
-                     net->wr_name_set[i]);
+            if (snprintf(name_buff, MAXLINE, "%s_2_%s.shmsem", net->name,
+                     net->wr_name_set[i]) < 0)
+                err_quit("snprintf error");
             _make_sem(name_buff, 0);
         }
     }
@@ -56,17 +57,20 @@ static void _make_fifo(Graph *g) {
         con = g->all_connector[i];
         wr_num = con->wr_num;
         for (int j=0; j<wr_num; ++j) {
-            snprintf(name_buff, MAXLINE, "./tmp/%s_2_%s.fifo", con->name, 
-                     con->wr_name_set[j]);
+            if (snprintf(name_buff, MAXLINE, "./tmp/%s_2_%s.fifo", con->name, 
+                     con->wr_name_set[j]) < 0)
+                err_quit("snprintf error");
             unlink(name_buff);
             if (mkfifo(name_buff, FILE_MODE) < 0 && errno != EEXIST) {
                 err_quit("make fifo failed: %s", name_buff);
             }
-
+            dprintf("create %s done\n", name_buff);
             // semaphore
-            snprintf(name_buff, MAXLINE, "%s_2_%s.fifosem", con->name, 
-                     con->wr_name_set[i]);
+            if (snprintf(name_buff, MAXLINE, "%s_2_%s.fifosem", con->name, 
+                     con->wr_name_set[j]) < 0)
+                err_quit("snprintf error");
             _make_sem(name_buff, 0);
+            dprintf("create %s done\n", name_buff);
         }
     }
 }
@@ -80,7 +84,7 @@ static void _make_proc_id_sem(Graph *g) {
 
 static void _make_fifo_rd_sem(Graph *g) {
     assert(g);
-    _make_sem(FIFO_RD_COUNT_SEM, g->size);
+    _make_sem(FIFO_RD_COUNT_SEM, g->size - 1);
     _make_sem(FIFO_WR_SEM, 0);
 }
 
@@ -91,6 +95,7 @@ int main() {
     _make_fifo(&g);
     _make_shd_mem(&g);
     _make_proc_id_sem(&g);
+    _make_fifo_rd_sem(&g);
 
     destroy_graph(&g);
 }

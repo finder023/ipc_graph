@@ -6,8 +6,8 @@
 #include "queue.h"
 
 // queue opr impl
-void init_queue_input(Queue *, Connector*);
-int send_queue(Queue *, Message *);
+void init_queue(Queue *, Connector*);
+int send_queue(Queue *, Message *, int);
 int recv_queue(Queue *, Message *, int);
 
 

@@ -11,8 +11,8 @@
 #include <semaphore.h>
 #include <assert.h>
 #include <string.h>
-
-#define DEBUG 0
+#include <stdarg.h>
+#include "conf.h"
 
 #define FILE_MODE (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)
 
@@ -20,6 +20,12 @@
 
 #define likely(x)    __builtin_expect(!!(x), 1)
 #define unlikely(x)  __builtin_expect(!!(x), 0)
+
+#if DEBUG
+    #define dprintf(f_, ...) printf((f_), ##__VA_ARGS__)
+#else
+    #define dprintf(f_, ...)
+#endif
 
 // Nonfatal error, print err msg and return
 void err_ret(const char *, ...);
