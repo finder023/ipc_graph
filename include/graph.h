@@ -13,6 +13,7 @@ typedef struct Connector {
     char wr_name_set[MAX_WR_NUM][MAX_NAME_LEN];
 } Connector;
 
+/// \brief Graph
 typedef struct Graph {
     Connector *all_connector[MAX_GRAPH_MODULE];
     int size;

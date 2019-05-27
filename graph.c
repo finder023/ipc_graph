@@ -186,8 +186,7 @@ Connector *dispatch_proc_net(Graph *g) {
     
     sem_wait(count_sem);
     sem_getvalue(count_sem, &val);
-    net = g->all_connector[val];
-    
+    net = g->all_connector[val];  
     sem_post(mutex_sem);
 
     return net;
