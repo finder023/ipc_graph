@@ -4,6 +4,6 @@
 # -----------------------------------------------------------------
 graph_module    proc0       0                       1       proc1
 graph_module    proc1       1           proc0       1       proc2
-graph_module    proc2       1           proc1       0       proc3
-# graph_module    proc3       1           proc2       1       proc4
-# graph_module    proc4       1           proc3       0
+graph_module    proc2       1           proc1       1       proc3
+graph_module    proc3       1           proc2       1       proc4
+graph_module    proc4       1           proc3       0
