@@ -8,7 +8,7 @@ RUNTIME = -lrt -lpthread
 
 CFLAG = -g -Wall 
 
-BIN = $(BUILD)/make_ipc $(BUILD)/tmain $(BUILD)/tmain1 $(BUILD)/tmain2 
+BIN = $(BUILD)/make_ipc $(BUILD)/proc0 $(BUILD)/proc1 $(BUILD)/proc2 
 	  
 
 DEPS = $(BUILD)/error.o  $(BUILD)/buffer.o $(BUILD)/opr_impl.o \
@@ -34,25 +34,25 @@ $(BUILD)/blackboard.o : blackboard.c
 $(BUILD)/make_ipc.o : make_ipc.c 
 	$(CC) $(CFLAG) -c $^ -o $@ 
 
-$(BUILD)/tmain.o : tmain.c
+$(BUILD)/proc0.o : proc0.c
 	$(CC) $(CFLAG) -c $^ -o $@
 
 $(BUILD)/make_ipc : $(BUILD)/make_ipc.o $(DEPS)
 	$(CC) $(CFLAG) $^ -o $@ $(RUNTIME)
 
-$(BUILD)/tmain : $(BUILD)/tmain.o $(DEPS)
+$(BUILD)/proc0 : $(BUILD)/proc0.o $(DEPS)
 	$(CC) $(CFLAG) $^ -o $@ $(RUNTIME)
 
-$(BUILD)/tmain1.o : tmain1.c
+$(BUILD)/proc1.o : proc1.c
 	$(CC) $(CFLAG) -c $^ -o $@
 
-$(BUILD)/tmain1 : $(BUILD)/tmain1.o $(DEPS)
+$(BUILD)/proc1 : $(BUILD)/proc1.o $(DEPS)
 	$(CC) $(CFLAG) $^ -o $@ $(RUNTIME)
 
-$(BUILD)/tmain2.o : tmain2.c
+$(BUILD)/proc2.o : proc2.c
 	$(CC) $(CFLAG) -c $^ -o $@
 
-$(BUILD)/tmain2 : $(BUILD)/tmain2.o $(DEPS)
+$(BUILD)/proc2 : $(BUILD)/proc2.o $(DEPS)
 	$(CC) $(CFLAG) $^ -o $@ $(RUNTIME)
 
 

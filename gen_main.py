@@ -20,6 +20,17 @@ headers = '''\
 const char *demo = "demo";
 '''
 
+user_funcs = '''\
+void user_func(Message *msg_in, int in_len, Message *msg_out, int out_len) {
+    assert(in_len > 0 && out_len > 0);
+    (void)in_len;
+    for (int i=0; i<out_len; ++i) {
+        memcpy(&msg_out[i], &msg_in[0], sizeof(Message));
+        printf("recvied msg: %s", msg_in[0].msg_data);
+    }
+}        
+'''
+
 main_str = '''
 int main() {
     Graph *g = (Graph*)malloc(sizeof(Graph));
@@ -33,7 +44,9 @@ int main() {
         q->opr.recv(q, &msg_in[i], i);
     }
 
-    // process
+    // user  process
+    user_func(msg_in, q->rd_num, msg_out, q->wr_num);
+
     for (int i=0; i<q->wr_num; ++i) {
         q->opr.send(q, &msg_out[0], i);    
     }
@@ -63,6 +76,7 @@ def main():
     for name in names:
         with open(name + '.c', 'w') as f:
             f.write(headers)
+            f.write(user_funcs)
             f.write(main_str)
 
 if __name__ == '__main__':

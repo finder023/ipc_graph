@@ -6,6 +6,14 @@
 #include "include/gen_main.h"
 
 const char *demo = "demo";
+void user_func(Message *msg_in, int in_len, Message *msg_out, int out_len) {
+    assert(in_len > 0 && out_len > 0);
+    (void)in_len;
+    for (int i=0; i<out_len; ++i) {
+        memcpy(&msg_out[i], &msg_in[0], sizeof(Message));
+        printf("recvied msg: %s", msg_in[0].msg_data);
+    }
+}        
 
 int main() {
     Graph *g = (Graph*)malloc(sizeof(Graph));
@@ -19,7 +27,9 @@ int main() {
         q->opr.recv(q, &msg_in[i], i);
     }
 
-    // process
+    // user  process
+    user_func(msg_in, q->rd_num, msg_out, q->wr_num);
+
     for (int i=0; i<q->wr_num; ++i) {
         q->opr.send(q, &msg_out[0], i);    
     }

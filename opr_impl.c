@@ -1,6 +1,19 @@
 #include "include/opr_impl.h"
 
-// fifo helper func
+/**
+ * @file opr_impl.c
+ * @brief ipc commution operator implication
+ * @author liuyaolong
+ * @version 1.0
+ * @date 2019-05-27
+ */
+
+
+/**
+ * @brief process read fifo open func
+ *
+ * @param struct Queue in proc
+ */
 static void _proc_fifo_rd_open(Queue *q) {
     assert(q);
 
@@ -46,6 +59,11 @@ static void _proc_fifo_rd_open(Queue *q) {
     sem_close(wr_sem);
 }
 
+/**
+ * @brief proess write fifo open function
+ *
+ * @param Queue in process
+ */
 static void _proc_fifo_wr_open(Queue *q) {
     assert(q);
 
@@ -79,6 +97,11 @@ static void _proc_fifo_wr_open(Queue *q) {
 
 }
 
+/**
+ * @brief process semaphore open function, sem that used for fifo sync
+ *
+ * @param q
+ */
 static void _proc_fifo_sem_open(Queue *q) {
     assert(q);
 
@@ -104,6 +127,12 @@ static void _proc_fifo_sem_open(Queue *q) {
     }
 }
 
+/**
+ * @brief proess Queue init function
+ *
+ * @param q
+ * @param net Connector that saves modules's input and output module name
+ */
 void init_Queue(Queue *q, Connector *net) {
     assert(q && net);
 
@@ -119,6 +148,15 @@ void init_Queue(Queue *q, Connector *net) {
 }
 
 
+/**
+ * @brief Module's send msg function using Queue
+ *
+ * @param q
+ * @param msg Message that contains data for sending
+ * @param id index of the send_fifo in module
+ *
+ * @return sent bytes
+ */
 int send_Queue(Queue *q, Message *msg, int id) {
     assert(q && msg);
     assert(id < q->wr_num);
@@ -145,6 +183,15 @@ int send_Queue(Queue *q, Message *msg, int id) {
     return res;
 }
 
+/**
+ * @brief Recive function in module using Queue
+ *
+ * @param q
+ * @param msg Empty Message used to save received data
+ * @param id Index of the recv_fifo in module
+ *
+ * @return received data in bytes
+ */
 int recv_Queue(Queue *q, Message *msg, int id) {
     assert(q && msg);
     assert(id < q->rd_num);
@@ -175,7 +222,12 @@ int recv_Queue(Queue *q, Message *msg, int id) {
 }
 
 
-// sample opr impl func
+/**
+ * @brief 
+ *
+ * @param s
+ * @param net
+ */
 void init_Sample(Sample *s, Connector *net) {
     assert(s && net);
 
@@ -244,6 +296,15 @@ void init_Sample(Sample *s, Connector *net) {
 
 }
 
+/**
+ * @brief 
+ *
+ * @param s
+ * @param msg
+ * @param id
+ *
+ * @return 
+ */
 int send_Sample(Sample *s, Message *msg, int id) {
     assert(s && msg);
 
@@ -262,6 +323,15 @@ int send_Sample(Sample *s, Message *msg, int id) {
     return remain_len;
 }
 
+/**
+ * @brief 
+ *
+ * @param s
+ * @param msg
+ * @param id
+ *
+ * @return 
+ */
 int recv_Sample(Sample *s, Message *msg, int id) {
     assert(s && msg);
     assert(id < s->rd_num);
