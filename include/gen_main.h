@@ -14,15 +14,14 @@
 } while(0)
 
 #define ALLOC_MSG(msg_in, msg_out, q, in_data, data_len) do {   \
-    msg_out = (Message*)malloc(sizeof(Message) * q->wr_num);    \
-    if (q->rd_num <= 1)                                         \
-        msg_in = (Message*)malloc(sizeof(Message));             \
-        continue;                                               \
-    msg_in = (Message*)malloc(sizeof(Message) * q->rd_num);     \
+    *(msg_out) = (Message*)malloc(sizeof(Message) * q->wr_num);    \
     if (q->rd_num == 0) {                                       \
-        memcpy(msg_in[0].msg_data, in_data, data_len);          \
-        msg_in[0].msg_len = data_len;                           \
+        *(msg_in) = (Message*)malloc(sizeof(Message));             \
+        memcpy((*(msg_in))->msg_data, in_data, data_len);            \
+        (*(msg_in))->msg_len = data_len;                             \
+        break;                                               \
     }                                                           \
+    *(msg_in) = (Message*)malloc(sizeof(Message) * q->rd_num);     \
 } while(0);
 
 #define FREE_MSG(msg_in, msg_out) do {  \

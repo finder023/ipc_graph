@@ -22,11 +22,11 @@ const char *demo = "demo";
 
 user_funcs = '''\
 void user_func(Message *msg_in, int in_len, Message *msg_out, int out_len) {
-    assert(in_len > 0 && out_len > 0);
+    assert(in_len > 0 || out_len > 0);
     (void)in_len;
     for (int i=0; i<out_len; ++i) {
         memcpy(&msg_out[i], &msg_in[0], sizeof(Message));
-        printf("recvied msg: %s", msg_in[0].msg_data);
+        printf("recvied msg: %s\\n", msg_in[0].msg_data);
     }
 }        
 '''
@@ -38,8 +38,8 @@ int main() {
     Message *msg_in, *msg_out;
     
     BUILD_GRAPH(%s, g, q);
-    ALLOC_MSG(msg_in, msg_out, q, demo, strlen(demo) + 1);
-
+    ALLOC_MSG(&msg_in, &msg_out, q, demo, strlen(demo) + 1);
+    
     for (int i=0; i<q->rd_num; ++i) {
         q->opr.recv(q, &msg_in[i], i);
     }
