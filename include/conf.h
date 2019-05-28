@@ -27,6 +27,8 @@
 
 #define MAXMSG 4000
 
+#define SHM_LEN 4096
+
 // test or not
 #define TEST 0
 

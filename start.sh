@@ -1,9 +1,6 @@
-#! /bin/sh
-
-./build/make_ipc
-
-./build/proc0 &
-./build/proc1 &
-./build/proc2 &
-./build/proc3 &
-./build/proc4 &
+#! /bin/bash
+proc0 &
+proc1 &
+proc2 &
+proc3 &
+proc4 &

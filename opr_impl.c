@@ -223,10 +223,10 @@ int recv_Queue(Queue *q, Message *msg, int id) {
 
 
 /**
- * @brief 
+ * @brief sampling mode ipc init function, open shared memory and semphores
  *
  * @param s
- * @param net
+ * @param net Connector that belongs to the process
  */
 void init_Sample(Sample *s, Connector *net) {
     assert(s && net);
@@ -255,7 +255,7 @@ void init_Sample(Sample *s, Connector *net) {
                     s->name) < 0)
             err_quit("snprinf error");
         if ((fd = shm_open(buf, O_RDWR, FILE_MODE)) < 0)
-            err_quit("open shm fail %s", buf);
+            err_quit("open rd shm fail %s", buf);
         s->fd_rd[i] = fd;
 
         if ((ptr = mmap(NULL, s->mem_len, PROT_READ | PROT_WRITE, MAP_SHARED,
@@ -274,11 +274,13 @@ void init_Sample(Sample *s, Connector *net) {
     // wr shm open
     for (int i=0; i<s->wr_num; ++i) {
         if (snprintf(buf, MAXLINE, "%s_2_%s.shm", s->name, 
-                    s->net->rd_name_set[i]) < 0)
+                    s->net->wr_name_set[i]) < 0)
             err_quit("snprinf error");
         if ((fd = shm_open(buf, O_RDWR, FILE_MODE)) < 0)
-            err_quit("open shm fail %s", buf);
+            err_quit("open wr shm fail %s", buf);
         s->fd_wr[i] = fd;
+
+        ftruncate(fd, SHM_LEN);
 
         if ((ptr = mmap(NULL, s->mem_len, PROT_READ | PROT_WRITE, MAP_SHARED,
             fd, 0)) == NULL)
@@ -287,7 +289,7 @@ void init_Sample(Sample *s, Connector *net) {
 
         // semaphore open
         if (snprintf(buf, MAXLINE, "%s_2_%s.shmsem", s->name, 
-            s->net->rd_name_set[i]) < 0)
+            s->net->wr_name_set[i]) < 0)
             err_quit("snprinf error");
         if ((sem = sem_open(buf, O_RDWR)) == SEM_FAILED)
             err_quit("open shm sem fail: %s", buf);
@@ -297,13 +299,13 @@ void init_Sample(Sample *s, Connector *net) {
 }
 
 /**
- * @brief 
+ * @brief sampling mode message send function
  *
  * @param s
- * @param msg
- * @param id
+ * @param msg message for sending
+ * @param id index of the shared wr memory ptr 
  *
- * @return 
+ * @return numbers of bytes sent
  */
 int send_Sample(Sample *s, Message *msg, int id) {
     assert(s && msg);
@@ -324,13 +326,13 @@ int send_Sample(Sample *s, Message *msg, int id) {
 }
 
 /**
- * @brief 
+ * @brief sampling mode message recv function
  *
- * @param s
- * @param msg
- * @param id
+ * @param s 
+ * @param msg message for saving received data
+ * @param id index of the rd shared memory ptr
  *
- * @return 
+ * @return numbers of bytes recv
  */
 int recv_Sample(Sample *s, Message *msg, int id) {
     assert(s && msg);
@@ -343,6 +345,7 @@ int recv_Sample(Sample *s, Message *msg, int id) {
     int remain_len = MSGHEADSIZE;
     
     // shm mutex
+    dprintf("%s wait for shm sem mutex\n", s->name);
     sem_wait(s->sem);
     memcpy(msg, s->rd_ptr_set[id], remain_len);
     remain_len = msg->msg_len;

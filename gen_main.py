@@ -42,6 +42,7 @@ int main() {
     // user  process
     printf("\\t%%s: ", q->name);
     user_func(msg_in, q->rd_num, msg_out, q->wr_num);
+
     for (int i=0; i<q->wr_num; ++i) {
         q->opr.send(q, &msg_out[0], i);    
     }
@@ -73,6 +74,10 @@ def main():
             f.write(headers)
             f.write(user_funcs)
             f.write(main_str)
+    with open('start.sh', 'w') as f:
+        f.write('#! /bin/bash\n')
+        for name in names:
+            f.write(name + ' &\n')
 
 if __name__ == '__main__':
     main()

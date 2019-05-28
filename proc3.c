@@ -25,7 +25,7 @@ int main() {
     // user  process
     printf("\t%s: ", q->name);
     user_func(msg_in, q->rd_num, msg_out, q->wr_num);
-    sleep(2);
+
     for (int i=0; i<q->wr_num; ++i) {
         q->opr.send(q, &msg_out[0], i);    
     }

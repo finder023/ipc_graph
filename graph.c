@@ -73,7 +73,6 @@ static int _read_str(const char **s, char *buf) {
 }
 
 // graph init funcs
-
 static void _graph_init(Graph *g) {
     assert(g);
     g->size = 0;

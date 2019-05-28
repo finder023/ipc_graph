@@ -12,7 +12,7 @@ int send_Queue(Queue *, Message *, int);
 int recv_Queue(Queue *, Message *, int);
 
 // sample opr impl
-void init_Smaple(Sample*, Connector*);
+void init_Sample(Sample*, Connector*);
 int send_Sample(Sample*, Message*, int);
 int recv_Sample(Sample*, Message*, int);
 
