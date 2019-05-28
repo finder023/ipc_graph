@@ -7,12 +7,7 @@
 
 const char *demo = "demo";
 void user_func(Message *msg_in, int in_len, Message *msg_out, int out_len) {
-    assert(in_len > 0 || out_len > 0);
-    (void)in_len;
-    for (int i=0; i<out_len; ++i) {
-        memcpy(&msg_out[i], &msg_in[0], sizeof(Message));
-        printf("recvied msg: %s\n", msg_in[0].msg_data);
-    }
+    USER_FUNC_BODY(msg_in, in_len, msg_out, out_len);
 }        
 
 int main() {
@@ -28,8 +23,9 @@ int main() {
     }
 
     // user  process
+    printf("\t%s: ", q->name);
     user_func(msg_in, q->rd_num, msg_out, q->wr_num);
-
+    sleep(2);
     for (int i=0; i<q->wr_num; ++i) {
         q->opr.send(q, &msg_out[0], i);    
     }
