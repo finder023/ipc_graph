@@ -75,9 +75,9 @@ def main():
             f.write(user_funcs)
             f.write(main_str)
     with open('start.sh', 'w') as f:
-        f.write('#! /bin/bash\n')
+        f.write('#! /bin/bash\n\n')
         for name in names:
-            f.write(name + ' &\n')
+            f.write('./build/' + name + ' &\n')
 
 if __name__ == '__main__':
     main()

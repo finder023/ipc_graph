@@ -1,6 +1,7 @@
 #! /bin/bash
-proc0 &
-proc1 &
-proc2 &
-proc3 &
-proc4 &
+
+./build/proc0 &
+./build/proc1 &
+./build/proc2 &
+./build/proc3 &
+./build/proc4 &
