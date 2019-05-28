@@ -70,13 +70,16 @@ $(BUILD)/proc4 : $(BUILD)/proc4.o $(DEPS)
 
 
 
-all : MKBUILD $(BIN)
+all : MKBUILD MKTMP $(BIN)
 
-.PHONY: MKBUILD all
+.PHONY: MKBUILD all MKTMP
 
 MKBUILD:
 	if [ ! -d $(BUILD) ]; then mkdir $(BUILD); mkdir $(BUILD)/tmp; elif \
 		[ ! -d $(BUILD)/tmp ]; then mkdir $(BUILD)/tmp; fi
+
+MKTMP:
+	if [ ! -d ./tmp ]; then mkdir ./tmp; fi
 
 clean : 
 	rm -rf $(BUILD)/*

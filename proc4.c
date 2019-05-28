@@ -12,10 +12,10 @@ void user_func(Message *msg_in, int in_len, Message *msg_out, int out_len) {
 
 int main() {
     Graph *g = (Graph*)malloc(sizeof(Graph));
-    Sample *q = (Sample*)malloc(sizeof(Sample));
+    Queue *q = (Queue*)malloc(sizeof(Queue));
     Message *msg_in, *msg_out;
     
-    BUILD_GRAPH(Sample, g, q);
+    BUILD_GRAPH(Queue, g, q);
     ALLOC_MSG(&msg_in, &msg_out, q, demo, strlen(demo) + 1);
     
     for (int i=0; i<q->rd_num; ++i) {
