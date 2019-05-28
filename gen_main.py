@@ -76,6 +76,7 @@ def main():
             f.write(main_str)
     with open('start.sh', 'w') as f:
         f.write('#! /bin/bash\n\n')
+        f.write('./build/make_ipc\n')
         for name in names:
             f.write('./build/' + name + ' &\n')
 
